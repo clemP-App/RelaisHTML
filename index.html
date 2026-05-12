@@ -347,53 +347,6 @@
       color: var(--muted);
     }
 
-    .sync-card {
-      display: grid;
-      gap: 12px;
-      border-left: 5px solid var(--primary);
-    }
-
-    .sync-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .sync-head h2 {
-      margin: 0;
-      font-size: clamp(1.15rem, 1.8vw, 1.45rem);
-    }
-
-    .sync-status {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 34px;
-      border-radius: 999px;
-      padding: 6px 10px;
-      background: #eef3fb;
-      color: var(--muted);
-      font-weight: 800;
-      font-size: 0.9rem;
-    }
-
-    .sync-status.ok { background: #e3f6e9; color: var(--success); }
-    .sync-status.error { background: #fde8eb; color: var(--danger); }
-    .sync-status.pending { background: #fff3df; color: var(--warning); }
-
-    .sync-help {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    .sync-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
     .history-section {
       overflow: hidden;
     }
@@ -866,9 +819,6 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
   <script>
     const STORAGE_STUDENTS_KEY = "relais6e_eleves";
     const STORAGE_PASSAGES_KEY = "relais6e_passages";
-    const STORAGE_GITHUB_SYNC_KEY = "relais6e_github_sync";
-    const DEFAULT_GITHUB_PATH = "data/passages.json";
-
     let students = [];
     let passages = [];
     let groups = [];
@@ -877,10 +827,6 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
     let running = false;
     let currentTarget = null;
     let lastPair = null;
-    let githubSyncConfig = null;
-    let githubSyncBusy = false;
-    let githubSyncQueued = false;
-    let githubSyncOverwriteQueued = false;
 
     const els = {
       btnImport: document.getElementById("btnImport"),
@@ -911,17 +857,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       historyBody: document.getElementById("historyBody"),
       rankDistance: document.getElementById("rankDistance"),
       rankPrecision: document.getElementById("rankPrecision"),
-      bestGroupCard: document.getElementById("bestGroupCard"),
-      githubSyncStatus: document.getElementById("githubSyncStatus"),
-      githubSyncForm: document.getElementById("githubSyncForm"),
-      githubOwnerInput: document.getElementById("githubOwnerInput"),
-      githubRepoInput: document.getElementById("githubRepoInput"),
-      githubBranchInput: document.getElementById("githubBranchInput"),
-      githubPathInput: document.getElementById("githubPathInput"),
-      githubTokenInput: document.getElementById("githubTokenInput"),
-      btnPullGithub: document.getElementById("btnPullGithub"),
-      btnPushGithub: document.getElementById("btnPushGithub"),
-      btnDisableGithubSync: document.getElementById("btnDisableGithubSync")
+      bestGroupCard: document.getElementById("bestGroupCard")
     };
 
     function showMessage(text, type) {
@@ -1006,290 +942,8 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       localStorage.setItem(STORAGE_STUDENTS_KEY, JSON.stringify(students));
     }
 
-    function savePassages(options) {
+    function savePassages() {
       localStorage.setItem(STORAGE_PASSAGES_KEY, JSON.stringify(passages));
-      if (!options || options.sync !== false) {
-        queueGitHubSync(options && options.overwrite === true);
-      }
-    }
-
-    function loadGitHubSyncConfig() {
-      try {
-        githubSyncConfig = JSON.parse(localStorage.getItem(STORAGE_GITHUB_SYNC_KEY) || "null");
-      } catch (e) {
-        githubSyncConfig = null;
-      }
-      if (!githubSyncConfig || typeof githubSyncConfig !== "object") {
-        githubSyncConfig = guessGitHubConfig();
-      }
-      hydrateGitHubSyncForm();
-      renderGitHubSyncStatus();
-    }
-
-    function guessGitHubConfig() {
-      const host = window.location.hostname;
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      if (!host.endsWith("github.io") || !parts.length) return null;
-      return {
-        owner: host.replace(".github.io", ""),
-        repo: parts[0],
-        branch: "main",
-        path: DEFAULT_GITHUB_PATH,
-        token: ""
-      };
-    }
-
-    function normalizeGitHubConfig(config) {
-      return {
-        owner: String(config.owner || "").trim(),
-        repo: String(config.repo || "").trim(),
-        branch: String(config.branch || "main").trim() || "main",
-        path: String(config.path || DEFAULT_GITHUB_PATH).trim().replace(/^\/+/, "") || DEFAULT_GITHUB_PATH,
-        token: String(config.token || "").trim()
-      };
-    }
-
-    function isGitHubSyncReady() {
-      return !!(githubSyncConfig && githubSyncConfig.owner && githubSyncConfig.repo && githubSyncConfig.branch && githubSyncConfig.path && githubSyncConfig.token);
-    }
-
-    function hydrateGitHubSyncForm() {
-      const config = githubSyncConfig || {};
-      els.githubOwnerInput.value = config.owner || "";
-      els.githubRepoInput.value = config.repo || "";
-      els.githubBranchInput.value = config.branch || "main";
-      els.githubPathInput.value = config.path || DEFAULT_GITHUB_PATH;
-      els.githubTokenInput.value = config.token || "";
-    }
-
-    function renderGitHubSyncStatus(text, type) {
-      if (!els.githubSyncStatus) return;
-      const ready = isGitHubSyncReady();
-      els.githubSyncStatus.textContent = text || (ready ? "Sync GitHub active" : "Sync GitHub non configuree");
-      els.githubSyncStatus.className = "sync-status" + (type ? " " + type : (ready ? " ok" : ""));
-      els.btnPullGithub.disabled = githubSyncBusy || !ready;
-      els.btnPushGithub.disabled = githubSyncBusy || !ready;
-      els.btnDisableGithubSync.disabled = githubSyncBusy || !githubSyncConfig;
-    }
-
-    function gitHubApiUrl(config) {
-      return "https://api.github.com/repos/" + encodeURIComponent(config.owner) + "/" +
-        encodeURIComponent(config.repo) + "/contents/" + config.path.split("/").map(encodeURIComponent).join("/") +
-        "?ref=" + encodeURIComponent(config.branch);
-    }
-
-    function encodeBase64Utf8(value) {
-      return btoa(unescape(encodeURIComponent(value)));
-    }
-
-    function decodeBase64Utf8(value) {
-      return decodeURIComponent(escape(atob(String(value || "").replace(/\s/g, ""))));
-    }
-
-    async function requestGitHubFile() {
-      const config = normalizeGitHubConfig(githubSyncConfig || {});
-      const response = await fetch(gitHubApiUrl(config), {
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer " + config.token,
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      });
-      if (response.status === 404) return { exists: false, sha: null, passages: [] };
-      if (!response.ok) throw new Error("GitHub lecture impossible (" + response.status + ").");
-      const data = await response.json();
-      const parsed = JSON.parse(decodeBase64Utf8(data.content || "e30="));
-      const remotePassages = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.passages) ? parsed.passages : []);
-      return { exists: true, sha: data.sha, passages: remotePassages };
-    }
-
-    async function writeGitHubFile(remoteSha, nextPassages) {
-      const config = normalizeGitHubConfig(githubSyncConfig || {});
-      const body = {
-        message: "Enregistre les performances relais",
-        content: encodeBase64Utf8(JSON.stringify({ passages: nextPassages }, null, 2) + "\n"),
-        branch: config.branch
-      };
-      if (remoteSha) body.sha = remoteSha;
-
-      const response = await fetch(gitHubApiUrl(config).replace(/\?ref=.*/, ""), {
-        method: "PUT",
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer " + config.token,
-          "Content-Type": "application/json",
-          "X-GitHub-Api-Version": "2022-11-28"
-        },
-        body: JSON.stringify(body)
-      });
-      if (!response.ok) throw new Error("GitHub ecriture impossible (" + response.status + ").");
-    }
-
-    function passageKey(p) {
-      if (p.id) return "id:" + p.id;
-      return [
-        p.date_heure, p.groupe, p.coureur_1, p.coureur_2,
-        p.distance_realisee, p.cible, p.ecart_absolu
-      ].join("|");
-    }
-
-    function normalizePassage(p) {
-      return {
-        id: p.id || createPassageId(p),
-        date_heure: p.date_heure,
-        groupe: p.groupe,
-        coureur_1: p.coureur_1,
-        coureur_2: p.coureur_2,
-        distance_arrete_c1: Number(p.distance_arrete_c1),
-        distance_lance_c2: Number(p.distance_lance_c2),
-        cible: Number(p.cible),
-        distance_realisee: Number(p.distance_realisee),
-        ecart: Number(p.ecart),
-        ecart_absolu: Number(p.ecart_absolu)
-      };
-    }
-
-    function mergePassages(localPassages, remotePassages) {
-      const map = new Map();
-      [...remotePassages, ...localPassages].forEach((p) => {
-        if (!p || !p.date_heure) return;
-        const normalized = normalizePassage(p);
-        map.set(passageKey(normalized), normalized);
-      });
-      return [...map.values()].sort((a, b) => new Date(b.date_heure) - new Date(a.date_heure));
-    }
-
-    function createPassageId(p) {
-      const seed = [
-        p.date_heure || new Date().toISOString(), p.groupe || "", p.coureur_1 || "", p.coureur_2 || "",
-        p.distance_realisee || "", Math.random().toString(36).slice(2)
-      ].join("|");
-      let hash = 0;
-      for (let i = 0; i < seed.length; i += 1) {
-        hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-      }
-      return "passage_" + Date.now().toString(36) + "_" + Math.abs(hash).toString(36);
-    }
-
-    async function pullPassagesFromGitHub(options) {
-      if (!isGitHubSyncReady()) return;
-      githubSyncBusy = true;
-      renderGitHubSyncStatus("Lecture GitHub...", "pending");
-      try {
-        const remote = await requestGitHubFile();
-        passages = mergePassages(passages, remote.passages);
-        savePassages({ sync: false });
-        renderGroups();
-        renderHistory();
-        renderBestGroupCard();
-        renderGitHubSyncStatus("Performances chargees depuis GitHub", "ok");
-        if (!options || options.pushAfterPull !== false) {
-          await pushPassagesToGitHub({ alreadyPulled: true, remoteSha: remote.sha });
-        }
-      } catch (err) {
-        renderGitHubSyncStatus("Erreur sync GitHub", "error");
-        showMessage(err.message, "error");
-      } finally {
-        githubSyncBusy = false;
-        renderGitHubSyncStatus();
-      }
-    }
-
-    async function pushPassagesToGitHub(options) {
-      if (!isGitHubSyncReady()) return;
-      if (githubSyncBusy && (!options || !options.alreadyPulled)) {
-        githubSyncQueued = true;
-        githubSyncOverwriteQueued = githubSyncOverwriteQueued || !!(options && options.overwrite);
-        return;
-      }
-      githubSyncBusy = true;
-      renderGitHubSyncStatus("Envoi GitHub...", "pending");
-      try {
-        const remote = options && options.alreadyPulled ? { sha: options.remoteSha, passages: passages } : await requestGitHubFile();
-        const shouldOverwrite = options && options.overwrite === true;
-        const merged = shouldOverwrite || (options && options.alreadyPulled) ? passages : mergePassages(passages, remote.passages);
-        await writeGitHubFile(remote.sha, merged);
-        passages = merged;
-        savePassages({ sync: false });
-        renderHistory();
-        renderBestGroupCard();
-        renderGitHubSyncStatus("Performances enregistrees sur GitHub", "ok");
-      } catch (err) {
-        renderGitHubSyncStatus("Erreur sync GitHub", "error");
-        showMessage(err.message, "error");
-      } finally {
-        githubSyncBusy = false;
-        if (githubSyncQueued) {
-          const shouldOverwrite = githubSyncOverwriteQueued;
-          githubSyncQueued = false;
-          githubSyncOverwriteQueued = false;
-          queueGitHubSync(shouldOverwrite);
-        } else {
-          renderGitHubSyncStatus();
-        }
-      }
-    }
-
-    function queueGitHubSync(overwrite) {
-      if (!isGitHubSyncReady()) return;
-      githubSyncOverwriteQueued = githubSyncOverwriteQueued || overwrite === true;
-      window.clearTimeout(queueGitHubSync.timeoutId);
-      queueGitHubSync.timeoutId = window.setTimeout(() => {
-        const shouldOverwrite = githubSyncOverwriteQueued;
-        githubSyncOverwriteQueued = false;
-        pushPassagesToGitHub({ overwrite: shouldOverwrite });
-      }, 600);
-    }
-
-    function saveGitHubSyncConfig() {
-      githubSyncConfig = normalizeGitHubConfig({
-        owner: els.githubOwnerInput.value,
-        repo: els.githubRepoInput.value,
-        branch: els.githubBranchInput.value,
-        path: els.githubPathInput.value,
-        token: els.githubTokenInput.value
-      });
-      localStorage.setItem(STORAGE_GITHUB_SYNC_KEY, JSON.stringify(githubSyncConfig));
-      hydrateGitHubSyncForm();
-
-      if (!isGitHubSyncReady()) {
-        renderGitHubSyncStatus("Configuration GitHub incomplete", "error");
-        showMessage("Renseigner proprietaire, depot, branche, chemin JSON et token GitHub.", "error");
-        return false;
-      }
-
-      renderGitHubSyncStatus("Sync GitHub configuree", "ok");
-      showMessage("Synchronisation GitHub configuree.", "ok");
-      return true;
-    }
-
-    function disableGitHubSync() {
-      githubSyncConfig = null;
-      localStorage.removeItem(STORAGE_GITHUB_SYNC_KEY);
-      hydrateGitHubSyncForm();
-      renderGitHubSyncStatus("Sync GitHub desactivee", "pending");
-    }
-
-    async function loadPublicPassagesFromGitHub() {
-      const publicPath = normalizeGitHubConfig(githubSyncConfig || {}).path || DEFAULT_GITHUB_PATH;
-      const publicUrl = publicPath + (publicPath.includes("?") ? "&" : "?") + "t=" + Date.now();
-      try {
-        const response = await fetch(publicUrl, { cache: "no-store" });
-        if (!response.ok) return;
-        const data = await response.json();
-        const publicPassages = Array.isArray(data) ? data : (Array.isArray(data.passages) ? data.passages : []);
-        if (!publicPassages.length) return;
-        passages = mergePassages(passages, publicPassages);
-        savePassages({ sync: false });
-        renderGroups();
-        renderHistory();
-        renderBestGroupCard();
-        if (!isGitHubSyncReady()) {
-          renderGitHubSyncStatus("Performances publiques chargees", "ok");
-        }
-      } catch (e) {
-        // Lecture publique facultative : l'application reste utilisable hors ligne ou en local.
-      }
     }
 
     function renderGroups() {
@@ -1706,7 +1360,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       students = [];
       passages = [];
       saveStudents();
-      savePassages({ overwrite: true });
+      savePassages();
       els.timerDisplay.textContent = "0.00";
       els.distanceForm.classList.add("hidden");
       els.attemptSummary.classList.add("hidden");
@@ -1778,28 +1432,6 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
 
       els.btnExport.addEventListener("click", exportResultsCSV);
       els.btnResetData.addEventListener("click", resetData);
-
-      els.githubSyncForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        saveGitHubSyncConfig();
-      });
-
-      els.btnPullGithub.addEventListener("click", () => {
-        if (saveGitHubSyncConfig()) {
-          pullPassagesFromGitHub({ pushAfterPull: false });
-        }
-      });
-
-      els.btnPushGithub.addEventListener("click", () => {
-        if (saveGitHubSyncConfig()) {
-          pushPassagesToGitHub();
-        }
-      });
-
-      els.btnDisableGithubSync.addEventListener("click", () => {
-        disableGitHubSync();
-        showMessage("Synchronisation GitHub desactivee.", "ok");
-      });
 
       els.groupSelect.addEventListener("change", () => {
         renderStudents();
@@ -1874,7 +1506,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
         const ok = window.confirm("Effacer uniquement l'historique des passages ?");
         if (!ok) return;
         passages = [];
-        savePassages({ overwrite: true });
+        savePassages();
         renderHistory();
         renderBestGroupCard();
         showMessage("Historique efface.", "ok");
@@ -1894,15 +1526,10 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
     function init() {
       registerServiceWorker();
       loadFromStorage();
-      loadGitHubSyncConfig();
       wireEvents();
       renderGroups();
       renderHistory();
       showMessage("Application prete. Importez un CSV pour commencer.", "ok");
-      loadPublicPassagesFromGitHub();
-      if (isGitHubSyncReady()) {
-        pullPassagesFromGitHub({ pushAfterPull: false });
-      }
     }
 
     init();
