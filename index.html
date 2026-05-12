@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suivi relais 6e - 12 secondes</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #182233;
+      --muted: #5a6a83;
+      --primary: #1665d8;
+      --primary-dark: #0e4da8;
+      --success: #1f8f4c;
+      --warning: #de8d1b;
+      --danger: #cc334b;
+      --border: #d8e0ec;
+      --shadow: 0 8px 24px rgba(15, 41, 77, 0.08);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.4rem, 2vw, 2rem);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    select, input, textarea {
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      color: var(--text);
+      background: #fff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    button {
+      min-height: 50px;
+      border: 0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+    .btn-secondary { background: #e9eef6; color: var(--text); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .students-list {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .student-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .student-row:last-child { border-bottom: none; }
+
+    .target-box {
+      margin-top: 8px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #edf4ff;
+      border: 1px solid #cde0ff;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .combinations {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .combo-btn {
+      min-height: 38px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      background: #e9eef6;
+    }
+
+    .timer-wrap {
+      display: grid;
+      gap: 10px;
+      align-items: center;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .timer {
+      font-size: clamp(3rem, 10vw, 7rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 1px;
+      color: var(--primary-dark);
+    }
+
+    .start-btn {
+      width: min(100%, 500px);
+      min-height: 84px;
+      font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+      background: linear-gradient(135deg, #1f8f4c, #167a3f);
+      color: #fff;
+    }
+
+    .muted { color: var(--muted); }
+    .hidden { display: none !important; }
+    .message { font-weight: 700; min-height: 24px; }
+    .message.error { color: var(--danger); }
+    .message.ok { color: var(--success); }
+
+    .attempt-summary {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .history-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    .table-wrap {
+      margin-top: 10px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: #eef3fb;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .tag-good { background: #e3f6e9; }
+    .tag-mid { background: #fff3df; }
+    .tag-bad { background: #fde8eb; }
+
+    .rank-box {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .example {
+      margin-top: 8px;
+      background: #101828;
+      color: #d8f1ff;
+      border-radius: 10px;
+      padding: 10px;
+      font-family: Consolas, Menlo, monospace;
+      font-size: 0.85rem;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    @media (max-width: 840px) {
+      .grid-2, .grid-3, .rank-box { grid-template-columns: 1fr; }
+      .student-row { grid-template-columns: 1fr; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1 class="title">Suivi relais 6e - 12 secondes</h1>
+
+    <section class="card">
+      <div class="toolbar">
+        <button id="btnImport" class="btn-primary">Importer CSV</button>
+        <input id="fileInput" type="file" accept=".csv,text/csv" class="hidden">
+        <button id="btnImportPaste" class="btn-secondary">Importer le texte colle</button>
+        <button id="btnExport" class="btn-secondary">Exporter resultats</button>
+        <button id="btnResetData" class="btn-danger">Reinitialiser les donnees</button>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label for="csvPasteInput">Ou coller le CSV ici</label>
+        <textarea id="csvPasteInput" rows="6" placeholder="Collez ici votre CSV (avec ; ou ,)"></textarea>
+      </div>
+      <p id="globalMessage" class="message" aria-live="polite"></p>
+      <div class="example">Exemple CSV:
+groupe,eleve,distance_arrete_6s,distance_lance_6s
+1,Lucas,28,34
+1,Emma,25,32
+1,Nathan,27,33
+2,Lina,24,30
+2,Hugo,29,35
+2,Jade,26,31</div>
+    </section>
+
+    <section class="card">
+      <div class="grid-2">
+        <div class="field">
+          <label for="groupSelect">Groupe</label>
+          <select id="groupSelect"></select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="btnRandomPair" class="btn-secondary">Generer un binome aleatoire</button>
+        </div>
+      </div>
+
+      <div id="studentsList" class="students-list"></div>
+
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field">
+          <label for="runner1Select">Coureur 1 (distance arretee 6s)</label>
+          <select id="runner1Select"></select>
+        </div>
+        <div class="field">
+          <label for="runner2Select">Coureur 2 (distance lancee 6s)</label>
+          <select id="runner2Select"></select>
+        </div>
+      </div>
+
+      <div id="targetBox" class="target-box">Objectif cible : -- m</div>
+      <div id="combinationBox" class="combinations"></div>
+    </section>
+
+    <section class="card timer-wrap">
+      <div class="muted">Chrono du relais (arret auto a 12 s)</div>
+      <div id="timerDisplay" class="timer">0.00</div>
+      <button id="btnStart" class="start-btn">Depart</button>
+
+      <form id="distanceForm" class="grid-2 hidden" style="width:min(100%,700px);">
+        <div class="field">
+          <label for="distanceInput">Distance realisee (m)</label>
+          <input id="distanceInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex: 61.5">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="btnSaveAttempt" type="submit" class="btn-success">Enregistrer le passage</button>
+        </div>
+      </form>
+
+      <div id="attemptSummary" class="attempt-summary hidden"></div>
+
+      <div class="toolbar">
+        <button id="btnNewSameGroup" class="btn-secondary hidden">Nouveau passage avec le meme groupe</button>
+        <button id="btnRestartSamePair" class="btn-secondary hidden">Recommencer avec le meme binome</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;">Historique des passages</h2>
+      <div class="history-tools">
+        <div class="field">
+          <label for="historyGroupFilter">Filtre groupe</label>
+          <select id="historyGroupFilter"></select>
+        </div>
+        <button id="btnShowAllHistory" class="btn-secondary">Afficher tout l'historique</button>
+        <button id="btnClearHistory" class="btn-danger">Effacer uniquement l'historique</button>
+      </div>
+
+      <div id="bestGroupCard" class="mini-card" style="margin-top:10px;"></div>
+
+      <div class="rank-box">
+        <div class="mini-card">
+          <strong>Top distance realisee</strong>
+          <ol id="rankDistance"></ol>
+        </div>
+        <div class="mini-card">
+          <strong>Top precision (ecart absolu minimal)</strong>
+          <ol id="rankPrecision"></ol>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date/heure</th>
+              <th>Groupe</th>
+              <th>Binome</th>
+              <th>D1 arrete</th>
+              <th>D2 lance</th>
+              <th>Cible</th>
+              <th>Realise</th>
+              <th>Ecart</th>
+              <th>Ecart absolu</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_STUDENTS_KEY = "relais6e_eleves";
+    const STORAGE_PASSAGES_KEY = "relais6e_passages";
+
+    let students = [];
+    let passages = [];
+    let groups = [];
+    let timerInterval = null;
+    let timerStart = 0;
+    let running = false;
+    let currentTarget = null;
+    let lastPair = null;
+
+    const els = {
+      btnImport: document.getElementById("btnImport"),
+      fileInput: document.getElementById("fileInput"),
+      btnImportPaste: document.getElementById("btnImportPaste"),
+      csvPasteInput: document.getElementById("csvPasteInput"),
+      btnExport: document.getElementById("btnExport"),
+      btnResetData: document.getElementById("btnResetData"),
+      globalMessage: document.getElementById("globalMessage"),
+      groupSelect: document.getElementById("groupSelect"),
+      studentsList: document.getElementById("studentsList"),
+      runner1Select: document.getElementById("runner1Select"),
+      runner2Select: document.getElementById("runner2Select"),
+      targetBox: document.getElementById("targetBox"),
+      combinationBox: document.getElementById("combinationBox"),
+      btnRandomPair: document.getElementById("btnRandomPair"),
+      timerDisplay: document.getElementById("timerDisplay"),
+      btnStart: document.getElementById("btnStart"),
+      distanceForm: document.getElementById("distanceForm"),
+      distanceInput: document.getElementById("distanceInput"),
+      attemptSummary: document.getElementById("attemptSummary"),
+      btnSaveAttempt: document.getElementById("btnSaveAttempt"),
+      btnNewSameGroup: document.getElementById("btnNewSameGroup"),
+      btnRestartSamePair: document.getElementById("btnRestartSamePair"),
+      historyGroupFilter: document.getElementById("historyGroupFilter"),
+      btnShowAllHistory: document.getElementById("btnShowAllHistory"),
+      btnClearHistory: document.getElementById("btnClearHistory"),
+      historyBody: document.getElementById("historyBody"),
+      rankDistance: document.getElementById("rankDistance"),
+      rankPrecision: document.getElementById("rankPrecision"),
+      bestGroupCard: document.getElementById("bestGroupCard")
+    };
+
+    function showMessage(text, type) {
+      els.globalMessage.textContent = text;
+      els.globalMessage.className = "message" + (type ? " " + type : "");
+    }
+
+    function normalizeNumber(v) {
+      if (v === null || v === undefined) return NaN;
+      return Number(String(v).trim().replace(",", "."));
+    }
+
+    function parseCSV(text) {
+      const cleaned = text.replace(/\r/g, "").trim();
+      if (!cleaned) throw new Error("Le fichier CSV est vide.");
+
+      const lines = cleaned.split("\n").filter(Boolean);
+      if (lines.length < 2) throw new Error("Le CSV doit contenir une ligne d'entete et des donnees.");
+
+      const headerLine = lines[0];
+      const delimiter = headerLine.includes(";") ? ";" : ",";
+      const headers = headerLine.split(delimiter).map((h) => h.trim().toLowerCase());
+      const required = ["groupe", "eleve", "distance_arrete_6s", "distance_lance_6s"];
+      const missing = required.filter((r) => !headers.includes(r));
+      if (missing.length) throw new Error("Colonnes manquantes: " + missing.join(", "));
+
+      const indexOf = (name) => headers.indexOf(name);
+      const parsed = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const cols = line.split(delimiter).map((c) => c.trim());
+        if (cols.length < headers.length) {
+          throw new Error("Ligne " + (i + 1) + " incomplete.");
+        }
+
+        const groupe = cols[indexOf("groupe")];
+        const eleve = cols[indexOf("eleve")];
+        const dArrete = normalizeNumber(cols[indexOf("distance_arrete_6s")]);
+        const dLance = normalizeNumber(cols[indexOf("distance_lance_6s")]);
+
+        if (!groupe || !eleve || Number.isNaN(dArrete) || Number.isNaN(dLance)) {
+          throw new Error("Ligne " + (i + 1) + " invalide (groupe, eleve ou distances).");
+        }
+
+        parsed.push({
+          groupe: String(groupe).trim(),
+          eleve: String(eleve).trim(),
+          distance_arrete_6s: dArrete,
+          distance_lance_6s: dLance
+        });
+      }
+
+      if (!parsed.length) throw new Error("Aucune ligne exploitable dans le CSV.");
+      return parsed;
+    }
+
+    function importStudentsFromCSVText(text) {
+      students = parseCSV(text);
+      saveStudents();
+      renderGroups();
+      showMessage("Import CSV reussi: " + students.length + " eleves charges.", "ok");
+    }
+
+    function loadFromStorage() {
+      try {
+        students = JSON.parse(localStorage.getItem(STORAGE_STUDENTS_KEY) || "[]");
+      } catch (e) {
+        students = [];
+      }
+      try {
+        passages = JSON.parse(localStorage.getItem(STORAGE_PASSAGES_KEY) || "[]");
+      } catch (e) {
+        passages = [];
+      }
+      if (!Array.isArray(students)) students = [];
+      if (!Array.isArray(passages)) passages = [];
+    }
+
+    function saveStudents() {
+      localStorage.setItem(STORAGE_STUDENTS_KEY, JSON.stringify(students));
+    }
+
+    function savePassages() {
+      localStorage.setItem(STORAGE_PASSAGES_KEY, JSON.stringify(passages));
+    }
+
+    function renderGroups() {
+      groups = [...new Set(students.map((s) => s.groupe))].sort((a, b) =>
+        String(a).localeCompare(String(b), "fr", { numeric: true, sensitivity: "base" })
+      );
+
+      const current = els.groupSelect.value;
+      els.groupSelect.innerHTML = "";
+      if (!groups.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Aucun groupe (importer un CSV)";
+        els.groupSelect.appendChild(opt);
+      } else {
+        groups.forEach((g) => {
+          const opt = document.createElement("option");
+          opt.value = g;
+          opt.textContent = "Groupe " + g;
+          els.groupSelect.appendChild(opt);
+        });
+        if (groups.includes(current)) els.groupSelect.value = current;
+      }
+
+      renderHistoryGroupFilter();
+      renderStudents();
+    }
+
+    function renderStudents() {
+      const g = els.groupSelect.value;
+      const groupStudents = students.filter((s) => s.groupe === g);
+      els.studentsList.innerHTML = "";
+
+      if (!groupStudents.length) {
+        els.studentsList.innerHTML = '<div class="student-row muted">Aucun eleve pour ce groupe.</div>';
+      } else {
+        groupStudents.forEach((s) => {
+          const row = document.createElement("div");
+          row.className = "student-row";
+          row.innerHTML =
+            "<strong>" + s.eleve + "</strong>" +
+            "<span>6s arrete: " + formatNumber(s.distance_arrete_6s) + " m</span>" +
+            "<span>6s lance: " + formatNumber(s.distance_lance_6s) + " m</span>";
+          els.studentsList.appendChild(row);
+        });
+      }
+
+      fillRunnerSelects(groupStudents);
+      renderCombinations(groupStudents);
+      updateTarget();
+      renderBestGroupCard();
+    }
+
+    function fillRunnerSelects(groupStudents) {
+      const r1 = els.runner1Select.value;
+      const r2 = els.runner2Select.value;
+      els.runner1Select.innerHTML = "";
+      els.runner2Select.innerHTML = "";
+
+      if (!groupStudents.length) {
+        const empty1 = document.createElement("option");
+        empty1.textContent = "Aucun";
+        empty1.value = "";
+        const empty2 = empty1.cloneNode(true);
+        els.runner1Select.appendChild(empty1);
+        els.runner2Select.appendChild(empty2);
+        return;
+      }
+
+      groupStudents.forEach((s) => {
+        const o1 = document.createElement("option");
+        o1.value = s.eleve;
+        o1.textContent = s.eleve;
+        els.runner1Select.appendChild(o1);
+
+        const o2 = document.createElement("option");
+        o2.value = s.eleve;
+        o2.textContent = s.eleve;
+        els.runner2Select.appendChild(o2);
+      });
+
+      els.runner1Select.value = groupStudents.some((s) => s.eleve === r1) ? r1 : groupStudents[0].eleve;
+      let defaultR2 = groupStudents.find((s) => s.eleve !== els.runner1Select.value);
+      els.runner2Select.value = groupStudents.some((s) => s.eleve === r2) ? r2 : (defaultR2 ? defaultR2.eleve : groupStudents[0].eleve);
+      ensureDifferentRunners();
+    }
+
+    function ensureDifferentRunners(changedSelect) {
+      const g = els.groupSelect.value;
+      const groupStudents = students.filter((s) => s.groupe === g);
+      if (groupStudents.length < 2) return;
+      if (els.runner1Select.value !== els.runner2Select.value) return;
+
+      if (changedSelect === "runner1") {
+        const other = groupStudents.find((s) => s.eleve !== els.runner1Select.value);
+        if (other) els.runner2Select.value = other.eleve;
+      } else {
+        const other = groupStudents.find((s) => s.eleve !== els.runner2Select.value);
+        if (other) els.runner1Select.value = other.eleve;
+      }
+    }
+
+    function updateTarget() {
+      const g = els.groupSelect.value;
+      const groupStudents = students.filter((s) => s.groupe === g);
+      const c1 = groupStudents.find((s) => s.eleve === els.runner1Select.value);
+      const c2 = groupStudents.find((s) => s.eleve === els.runner2Select.value);
+      if (!c1 || !c2 || c1.eleve === c2.eleve) {
+        currentTarget = null;
+        els.targetBox.textContent = "Objectif cible : -- m";
+        return;
+      }
+      currentTarget = c1.distance_arrete_6s + c2.distance_lance_6s;
+      els.targetBox.textContent = "Objectif cible : " + formatNumber(currentTarget) + " m";
+    }
+
+    function renderCombinations(groupStudents) {
+      els.combinationBox.innerHTML = "";
+      if (groupStudents.length < 2) return;
+
+      groupStudents.forEach((a) => {
+        groupStudents.forEach((b) => {
+          if (a.eleve === b.eleve) return;
+          const btn = document.createElement("button");
+          btn.className = "combo-btn";
+          btn.type = "button";
+          const target = a.distance_arrete_6s + b.distance_lance_6s;
+          btn.textContent = a.eleve + " -> " + b.eleve + " (" + formatNumber(target) + " m)";
+          btn.addEventListener("click", () => {
+            els.runner1Select.value = a.eleve;
+            els.runner2Select.value = b.eleve;
+            updateTarget();
+          });
+          els.combinationBox.appendChild(btn);
+        });
+      });
+    }
+
+    function setInputsDisabled(disabled) {
+      els.groupSelect.disabled = disabled;
+      els.runner1Select.disabled = disabled;
+      els.runner2Select.disabled = disabled;
+      els.btnRandomPair.disabled = disabled;
+      [...els.combinationBox.querySelectorAll("button")].forEach((b) => { b.disabled = disabled; });
+    }
+
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        gain.gain.value = 0.08;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
+      } catch (e) {
+      }
+    }
+
+    function startTimer() {
+      if (running) return;
+      if (!students.length) {
+        showMessage("Importer d'abord un CSV d'eleves.", "error");
+        return;
+      }
+      if (!currentTarget) {
+        showMessage("Selectionner un binome valide.", "error");
+        return;
+      }
+
+      running = true;
+      showMessage("Chrono lance. Le relais s'arrete automatiquement a 12 s.", "ok");
+      els.attemptSummary.classList.add("hidden");
+      els.btnNewSameGroup.classList.add("hidden");
+      els.btnRestartSamePair.classList.add("hidden");
+      els.distanceForm.classList.add("hidden");
+      els.distanceInput.value = "";
+
+      setInputsDisabled(true);
+      els.btnStart.disabled = true;
+
+      timerStart = performance.now();
+      els.timerDisplay.textContent = "0.00";
+      timerInterval = window.setInterval(() => {
+        const elapsed = (performance.now() - timerStart) / 1000;
+        if (elapsed >= 12) {
+          els.timerDisplay.textContent = "12.00";
+          stopTimer();
+        } else {
+          els.timerDisplay.textContent = elapsed.toFixed(2);
+        }
+      }, 16);
+    }
+
+    function stopTimer() {
+      if (!running) return;
+      running = false;
+      window.clearInterval(timerInterval);
+      timerInterval = null;
+      playBeep();
+      els.distanceForm.classList.remove("hidden");
+      els.distanceInput.focus();
+      showMessage("Temps ecoule. Saisir la distance realisee.", "ok");
+    }
+
+    function saveAttempt(distanceRealisee) {
+      const g = els.groupSelect.value;
+      const c1 = students.find((s) => s.groupe === g && s.eleve === els.runner1Select.value);
+      const c2 = students.find((s) => s.groupe === g && s.eleve === els.runner2Select.value);
+      if (!c1 || !c2 || c1.eleve === c2.eleve) {
+        showMessage("Binome invalide.", "error");
+        return;
+      }
+      const cible = c1.distance_arrete_6s + c2.distance_lance_6s;
+      const ecart = distanceRealisee - cible;
+      const ecartAbs = Math.abs(ecart);
+      const status =
+        ecart > 0 ? "au-dessus de la cible" :
+        ecart < 0 ? "en-dessous de la cible" :
+        "pile sur la cible";
+
+      const attempt = {
+        date_heure: new Date().toISOString(),
+        groupe: g,
+        coureur_1: c1.eleve,
+        coureur_2: c2.eleve,
+        distance_arrete_c1: c1.distance_arrete_6s,
+        distance_lance_c2: c2.distance_lance_6s,
+        cible: round2(cible),
+        distance_realisee: round2(distanceRealisee),
+        ecart: round2(ecart),
+        ecart_absolu: round2(ecartAbs)
+      };
+
+      passages.unshift(attempt);
+      savePassages();
+
+      els.attemptSummary.classList.remove("hidden");
+      els.attemptSummary.innerHTML =
+        "<strong>Bilan du passage</strong>" +
+        "<span>Distance realisee : " + formatNumber(attempt.distance_realisee) + " m</span>" +
+        "<span>Cible : " + formatNumber(attempt.cible) + " m</span>" +
+        "<span>Ecart : " + signed(attempt.ecart) + " m (" + status + ")</span>" +
+        "<span>Ecart absolu : " + formatNumber(attempt.ecart_absolu) + " m</span>";
+
+      setInputsDisabled(false);
+      els.btnStart.disabled = false;
+      els.distanceForm.classList.add("hidden");
+      els.btnNewSameGroup.classList.remove("hidden");
+      els.btnRestartSamePair.classList.remove("hidden");
+      lastPair = { group: g, c1: c1.eleve, c2: c2.eleve };
+      showMessage("Passage enregistre automatiquement.", "ok");
+      renderHistory();
+      renderBestGroupCard();
+    }
+
+    function renderHistoryGroupFilter() {
+      const old = els.historyGroupFilter.value;
+      els.historyGroupFilter.innerHTML = "";
+      const all = document.createElement("option");
+      all.value = "__ALL__";
+      all.textContent = "Tous les groupes";
+      els.historyGroupFilter.appendChild(all);
+      groups.forEach((g) => {
+        const o = document.createElement("option");
+        o.value = g;
+        o.textContent = "Groupe " + g;
+        els.historyGroupFilter.appendChild(o);
+      });
+      els.historyGroupFilter.value = [...els.historyGroupFilter.options].some((o) => o.value === old) ? old : "__ALL__";
+    }
+
+    function qualityClass(ecartAbs) {
+      if (ecartAbs <= 1) return "tag-good";
+      if (ecartAbs <= 3) return "tag-mid";
+      return "tag-bad";
+    }
+
+    function renderHistory() {
+      const filter = els.historyGroupFilter.value;
+      const list = filter === "__ALL__" ? passages : passages.filter((p) => p.groupe === filter);
+      els.historyBody.innerHTML = "";
+
+      if (!list.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="9" class="muted">Aucun passage enregistre.</td>';
+        els.historyBody.appendChild(tr);
+      } else {
+        list.forEach((p) => {
+          const tr = document.createElement("tr");
+          tr.className = qualityClass(p.ecart_absolu);
+          tr.innerHTML =
+            "<td>" + formatDate(p.date_heure) + "</td>" +
+            "<td>" + escapeHtml(p.groupe) + "</td>" +
+            "<td>" + escapeHtml(p.coureur_1) + " -> " + escapeHtml(p.coureur_2) + "</td>" +
+            "<td>" + formatNumber(p.distance_arrete_c1) + "</td>" +
+            "<td>" + formatNumber(p.distance_lance_c2) + "</td>" +
+            "<td>" + formatNumber(p.cible) + "</td>" +
+            "<td>" + formatNumber(p.distance_realisee) + "</td>" +
+            "<td>" + signed(p.ecart) + "</td>" +
+            "<td>" + formatNumber(p.ecart_absolu) + "</td>";
+          els.historyBody.appendChild(tr);
+        });
+      }
+
+      renderRankings();
+    }
+
+    function renderRankings() {
+      const topDistance = [...passages]
+        .sort((a, b) => b.distance_realisee - a.distance_realisee)
+        .slice(0, 5);
+      const topPrecision = [...passages]
+        .sort((a, b) => a.ecart_absolu - b.ecart_absolu || b.distance_realisee - a.distance_realisee)
+        .slice(0, 5);
+
+      els.rankDistance.innerHTML = topDistance.length
+        ? topDistance.map((p) =>
+            "<li>G" + escapeHtml(p.groupe) + " - " + escapeHtml(p.coureur_1) + " -> " +
+            escapeHtml(p.coureur_2) + " : " + formatNumber(p.distance_realisee) + " m</li>"
+          ).join("")
+        : "<li class='muted'>Aucune donnee.</li>";
+
+      els.rankPrecision.innerHTML = topPrecision.length
+        ? topPrecision.map((p) =>
+            "<li>G" + escapeHtml(p.groupe) + " - " + escapeHtml(p.coureur_1) + " -> " +
+            escapeHtml(p.coureur_2) + " : ecart abs " + formatNumber(p.ecart_absolu) + " m</li>"
+          ).join("")
+        : "<li class='muted'>Aucune donnee.</li>";
+    }
+
+    function renderBestGroupCard() {
+      const g = els.groupSelect.value;
+      if (!g) {
+        els.bestGroupCard.innerHTML = "<strong>Meilleur passage du groupe</strong><div class='muted'>Aucun groupe selectionne.</div>";
+        return;
+      }
+      const list = passages.filter((p) => p.groupe === g);
+      if (!list.length) {
+        els.bestGroupCard.innerHTML = "<strong>Meilleur passage du groupe " + escapeHtml(g) + "</strong><div class='muted'>Aucun passage pour ce groupe.</div>";
+        return;
+      }
+      const best = [...list].sort((a, b) => a.ecart_absolu - b.ecart_absolu || b.distance_realisee - a.distance_realisee)[0];
+      els.bestGroupCard.innerHTML =
+        "<strong>Meilleur passage du groupe " + escapeHtml(g) + "</strong>" +
+        "<div>" + formatDate(best.date_heure) + " - " + escapeHtml(best.coureur_1) + " -> " + escapeHtml(best.coureur_2) + "</div>" +
+        "<div>Cible: " + formatNumber(best.cible) + " m | Realise: " + formatNumber(best.distance_realisee) + " m | Ecart abs: " + formatNumber(best.ecart_absolu) + " m</div>";
+    }
+
+    function exportResultsCSV() {
+      if (!passages.length) {
+        showMessage("Aucun resultat a exporter.", "error");
+        return;
+      }
+      const headers = [
+        "date_heure", "groupe", "coureur_1", "coureur_2",
+        "distance_arrete_c1", "distance_lance_c2", "cible",
+        "distance_realisee", "ecart", "ecart_absolu"
+      ];
+      const lines = [headers.join(";")];
+      passages.forEach((p) => {
+        lines.push([
+          p.date_heure,
+          p.groupe,
+          p.coureur_1,
+          p.coureur_2,
+          p.distance_arrete_c1,
+          p.distance_lance_c2,
+          p.cible,
+          p.distance_realisee,
+          p.ecart,
+          p.ecart_absolu
+        ].map(csvEscape).join(";"));
+      });
+
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resultats_relais_6e.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showMessage("Export CSV genere.", "ok");
+    }
+
+    function resetData() {
+      const ok = window.confirm("Confirmer la reinitialisation complete ? (eleves + historique)");
+      if (!ok) return;
+      students = [];
+      passages = [];
+      saveStudents();
+      savePassages();
+      els.timerDisplay.textContent = "0.00";
+      els.distanceForm.classList.add("hidden");
+      els.attemptSummary.classList.add("hidden");
+      renderGroups();
+      renderHistory();
+      showMessage("Donnees reinitialisees.", "ok");
+    }
+
+    function formatNumber(n) {
+      return Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+    }
+
+    function round2(n) {
+      return Math.round(n * 100) / 100;
+    }
+
+    function signed(n) {
+      const value = round2(n);
+      return (value > 0 ? "+" : "") + formatNumber(value);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      return d.toLocaleString("fr-FR");
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function csvEscape(value) {
+      const s = String(value).replace(/"/g, '""');
+      return '"' + s + '"';
+    }
+
+    function wireEvents() {
+      els.btnImport.addEventListener("click", () => els.fileInput.click());
+      els.fileInput.addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          importStudentsFromCSVText(text);
+        } catch (err) {
+          showMessage("Erreur CSV: " + err.message, "error");
+        } finally {
+          els.fileInput.value = "";
+        }
+      });
+
+      els.btnImportPaste.addEventListener("click", () => {
+        const text = els.csvPasteInput.value.trim();
+        if (!text) {
+          showMessage("Collez d'abord un contenu CSV dans la zone de texte.", "error");
+          return;
+        }
+        try {
+          importStudentsFromCSVText(text);
+        } catch (err) {
+          showMessage("Erreur CSV: " + err.message, "error");
+        }
+      });
+
+      els.btnExport.addEventListener("click", exportResultsCSV);
+      els.btnResetData.addEventListener("click", resetData);
+
+      els.groupSelect.addEventListener("change", () => {
+        renderStudents();
+      });
+
+      els.runner1Select.addEventListener("change", () => {
+        ensureDifferentRunners("runner1");
+        updateTarget();
+      });
+
+      els.runner2Select.addEventListener("change", () => {
+        ensureDifferentRunners("runner2");
+        updateTarget();
+      });
+
+      els.btnRandomPair.addEventListener("click", () => {
+        const g = els.groupSelect.value;
+        const list = students.filter((s) => s.groupe === g);
+        if (list.length < 2) return;
+        const i = Math.floor(Math.random() * list.length);
+        let j = Math.floor(Math.random() * list.length);
+        while (j === i) j = Math.floor(Math.random() * list.length);
+        els.runner1Select.value = list[i].eleve;
+        els.runner2Select.value = list[j].eleve;
+        updateTarget();
+      });
+
+      els.btnStart.addEventListener("click", startTimer);
+
+      els.distanceForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const dist = normalizeNumber(els.distanceInput.value);
+        if (Number.isNaN(dist) || dist < 0) {
+          showMessage("Entrer une distance valide (>= 0).", "error");
+          return;
+        }
+        saveAttempt(dist);
+      });
+
+      els.btnNewSameGroup.addEventListener("click", () => {
+        els.timerDisplay.textContent = "0.00";
+        els.attemptSummary.classList.add("hidden");
+        els.distanceForm.classList.add("hidden");
+        els.distanceInput.value = "";
+        showMessage("Pret pour un nouveau passage dans le meme groupe.", "ok");
+      });
+
+      els.btnRestartSamePair.addEventListener("click", () => {
+        if (!lastPair) return;
+        els.groupSelect.value = lastPair.group;
+        renderStudents();
+        els.runner1Select.value = lastPair.c1;
+        els.runner2Select.value = lastPair.c2;
+        updateTarget();
+        els.timerDisplay.textContent = "0.00";
+        els.attemptSummary.classList.add("hidden");
+        els.distanceForm.classList.add("hidden");
+        els.distanceInput.value = "";
+        showMessage("Meme binome recharge. Pret a repartir.", "ok");
+      });
+
+      els.historyGroupFilter.addEventListener("change", renderHistory);
+      els.btnShowAllHistory.addEventListener("click", () => {
+        els.historyGroupFilter.value = "__ALL__";
+        renderHistory();
+      });
+
+      els.btnClearHistory.addEventListener("click", () => {
+        const ok = window.confirm("Effacer uniquement l'historique des passages ?");
+        if (!ok) return;
+        passages = [];
+        savePassages();
+        renderHistory();
+        renderBestGroupCard();
+        showMessage("Historique efface.", "ok");
+      });
+    }
+
+    function init() {
+      loadFromStorage();
+      wireEvents();
+      renderGroups();
+      renderHistory();
+      showMessage("Application prete. Importez un CSV pour commencer.", "ok");
+    }
+
+    init();
+  </script>
+</body>
+</html>
