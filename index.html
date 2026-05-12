@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#5b5ff6">
+  <meta name="description" content="Application PWA de suivi des relais 6e sur 12 secondes, utilisable hors connexion apres chargement.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Relais 12s">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <title>Suivi relais 6e - 12 secondes</title>
   <style>
     :root {
@@ -1809,7 +1816,18 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       });
     }
 
+    function registerServiceWorker() {
+      if (!("serviceWorker" in navigator)) return;
+
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((error) => {
+          console.warn("Service worker non enregistre", error);
+        });
+      });
+    }
+
     function init() {
+      registerServiceWorker();
       loadFromStorage();
       loadGitHubSyncConfig();
       wireEvents();
