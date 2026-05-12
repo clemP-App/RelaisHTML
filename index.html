@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#5b5ff6">
+  <meta name="description" content="Application PWA de suivi des relais 6e sur 12 secondes, utilisable hors connexion apres chargement.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Relais 12s">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <title>Suivi relais 6e - 12 secondes</title>
   <style>
     :root {
@@ -752,6 +759,49 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       </div>
     </section>
 
+    <section class="card sync-card" aria-labelledby="github-sync-title">
+      <div class="sync-head">
+        <div>
+          <h2 id="github-sync-title">Synchronisation GitHub</h2>
+          <p class="sync-help">Optionnel : renseignez un token GitHub pour charger et enregistrer l'historique dans un fichier JSON du depot.</p>
+        </div>
+        <span id="githubSyncStatus" class="sync-status" aria-live="polite">Sync GitHub non configuree</span>
+      </div>
+
+      <form id="githubSyncForm" class="grid-3" style="margin-top:12px;">
+        <div class="field">
+          <label for="githubOwnerInput">Proprietaire</label>
+          <input id="githubOwnerInput" type="text" autocomplete="off" placeholder="Ex: clemP-App">
+        </div>
+        <div class="field">
+          <label for="githubRepoInput">Depot</label>
+          <input id="githubRepoInput" type="text" autocomplete="off" placeholder="Ex: RelaisHTML">
+        </div>
+        <div class="field">
+          <label for="githubBranchInput">Branche</label>
+          <input id="githubBranchInput" type="text" autocomplete="off" value="main">
+        </div>
+        <div class="field">
+          <label for="githubPathInput">Chemin JSON</label>
+          <input id="githubPathInput" type="text" autocomplete="off" value="data/passages.json">
+        </div>
+        <div class="field">
+          <label for="githubTokenInput">Token GitHub</label>
+          <input id="githubTokenInput" type="password" autocomplete="off" placeholder="Token personnel GitHub">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn-primary">Enregistrer la sync</button>
+        </div>
+      </form>
+
+      <div class="sync-actions" style="margin-top:12px;">
+        <button id="btnPullGithub" type="button" class="btn-secondary">Charger depuis GitHub</button>
+        <button id="btnPushGithub" type="button" class="btn-success">Enregistrer vers GitHub</button>
+        <button id="btnDisableGithubSync" type="button" class="btn-danger">Desactiver la sync</button>
+      </div>
+    </section>
+
     <section class="card history-section">
       <div class="section-head">
         <div>
@@ -994,7 +1044,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
         owner: String(config.owner || "").trim(),
         repo: String(config.repo || "").trim(),
         branch: String(config.branch || "main").trim() || "main",
-        path: String(config.path || DEFAULT_GITHUB_PATH).trim() || DEFAULT_GITHUB_PATH,
+        path: String(config.path || DEFAULT_GITHUB_PATH).trim().replace(/^\/+/, "") || DEFAULT_GITHUB_PATH,
         token: String(config.token || "").trim()
       };
     }
@@ -1019,6 +1069,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       els.githubSyncStatus.className = "sync-status" + (type ? " " + type : (ready ? " ok" : ""));
       els.btnPullGithub.disabled = githubSyncBusy || !ready;
       els.btnPushGithub.disabled = githubSyncBusy || !ready;
+      els.btnDisableGithubSync.disabled = githubSyncBusy || !githubSyncConfig;
     }
 
     function gitHubApiUrl(config) {
@@ -1200,7 +1251,16 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       });
       localStorage.setItem(STORAGE_GITHUB_SYNC_KEY, JSON.stringify(githubSyncConfig));
       hydrateGitHubSyncForm();
+
+      if (!isGitHubSyncReady()) {
+        renderGitHubSyncStatus("Configuration GitHub incomplete", "error");
+        showMessage("Renseigner proprietaire, depot, branche, chemin JSON et token GitHub.", "error");
+        return false;
+      }
+
       renderGitHubSyncStatus("Sync GitHub configuree", "ok");
+      showMessage("Synchronisation GitHub configuree.", "ok");
+      return true;
     }
 
     function disableGitHubSync() {
@@ -1211,7 +1271,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
     }
 
     async function loadPublicPassagesFromGitHub() {
-      const publicPath = (githubSyncConfig && githubSyncConfig.path) || DEFAULT_GITHUB_PATH;
+      const publicPath = normalizeGitHubConfig(githubSyncConfig || {}).path || DEFAULT_GITHUB_PATH;
       const publicUrl = publicPath + (publicPath.includes("?") ? "&" : "?") + "t=" + Date.now();
       try {
         const response = await fetch(publicUrl, { cache: "no-store" });
@@ -1230,18 +1290,6 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       } catch (e) {
         // Lecture publique facultative : l'application reste utilisable hors ligne ou en local.
       }
-    }
-
-    function createPassageId(p) {
-      const seed = [
-        p.date_heure || new Date().toISOString(), p.groupe || "", p.coureur_1 || "", p.coureur_2 || "",
-        p.distance_realisee || "", Math.random().toString(36).slice(2)
-      ].join("|");
-      let hash = 0;
-      for (let i = 0; i < seed.length; i += 1) {
-        hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-      }
-      return "passage_" + Date.now().toString(36) + "_" + Math.abs(hash).toString(36);
     }
 
     function renderGroups() {
@@ -1282,7 +1330,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
           const row = document.createElement("div");
           row.className = "student-row";
           row.innerHTML =
-            "<strong>" + s.eleve + "</strong>" +
+            "<strong>" + escapeHtml(s.eleve) + "</strong>" +
             "<span>6s arrete: " + formatNumber(s.distance_arrete_6s) + " m</span>" +
             "<span>6s lance: " + formatNumber(s.distance_lance_6s) + " m</span>";
           els.studentsList.appendChild(row);
@@ -1731,6 +1779,27 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       els.btnExport.addEventListener("click", exportResultsCSV);
       els.btnResetData.addEventListener("click", resetData);
 
+      els.githubSyncForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        saveGitHubSyncConfig();
+      });
+
+      els.btnPullGithub.addEventListener("click", () => {
+        if (saveGitHubSyncConfig()) {
+          pullPassagesFromGitHub({ pushAfterPull: false });
+        }
+      });
+
+      els.btnPushGithub.addEventListener("click", () => {
+        if (saveGitHubSyncConfig()) {
+          pushPassagesToGitHub();
+        }
+      });
+
+      els.btnDisableGithubSync.addEventListener("click", () => {
+        disableGitHubSync();
+        showMessage("Synchronisation GitHub desactivee.", "ok");
+      });
 
       els.groupSelect.addEventListener("change", () => {
         renderStudents();
@@ -1749,7 +1818,10 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       els.btnRandomPair.addEventListener("click", () => {
         const g = els.groupSelect.value;
         const list = students.filter((s) => s.groupe === g);
-        if (list.length < 2) return;
+        if (list.length < 2) {
+          showMessage("Au moins 2 eleves sont necessaires pour generer un binome.", "error");
+          return;
+        }
         const i = Math.floor(Math.random() * list.length);
         let j = Math.floor(Math.random() * list.length);
         while (j === i) j = Math.floor(Math.random() * list.length);
@@ -1809,7 +1881,18 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       });
     }
 
+    function registerServiceWorker() {
+      if (!("serviceWorker" in navigator)) return;
+
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((error) => {
+          console.warn("Service worker non enregistre", error);
+        });
+      });
+    }
+
     function init() {
+      registerServiceWorker();
       loadFromStorage();
       loadGitHubSyncConfig();
       wireEvents();
