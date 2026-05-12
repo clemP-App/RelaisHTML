@@ -1107,6 +1107,28 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       renderGitHubSyncStatus("Sync GitHub desactivee", "pending");
     }
 
+    async function loadPublicPassagesFromGitHub() {
+      const publicPath = (githubSyncConfig && githubSyncConfig.path) || DEFAULT_GITHUB_PATH;
+      const publicUrl = publicPath + (publicPath.includes("?") ? "&" : "?") + "t=" + Date.now();
+      try {
+        const response = await fetch(publicUrl, { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        const publicPassages = Array.isArray(data) ? data : (Array.isArray(data.passages) ? data.passages : []);
+        if (!publicPassages.length) return;
+        passages = mergePassages(passages, publicPassages);
+        savePassages({ sync: false });
+        renderGroups();
+        renderHistory();
+        renderBestGroupCard();
+        if (!isGitHubSyncReady()) {
+          renderGitHubSyncStatus("Performances publiques chargees", "ok");
+        }
+      } catch (e) {
+        // Lecture publique facultative : l'application reste utilisable hors ligne ou en local.
+      }
+    }
+
     function renderGroups() {
       groups = [...new Set(students.map((s) => s.groupe))].sort((a, b) =>
         String(a).localeCompare(String(b), "fr", { numeric: true, sensitivity: "base" })
@@ -1687,6 +1709,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       renderGroups();
       renderHistory();
       showMessage("Application prete. Importez un CSV pour commencer.", "ok");
+      loadPublicPassagesFromGitHub();
       if (isGitHubSyncReady()) {
         pullPassagesFromGitHub({ pushAfterPull: false });
       }
