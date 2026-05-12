@@ -202,18 +202,181 @@
       margin-top: 8px;
     }
 
+    .history-section {
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2vw, 1.6rem);
+    }
+
+    .section-kicker {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
     .history-tools {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items: end;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f8fbff;
     }
+
+    .history-tools .field {
+      min-width: min(100%, 220px);
+      flex: 1 1 220px;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .analysis-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow: 0 6px 18px rgba(15, 41, 77, 0.06);
+    }
+
+    .analysis-card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .analysis-highlight {
+      display: grid;
+      gap: 10px;
+    }
+
+    .analysis-title-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #edf4ff;
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid #dfe8f5;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .metric-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 4px;
+      font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .rank-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .rank-list li {
+      display: grid;
+      gap: 2px;
+      padding: 10px;
+      border: 1px solid #dfe8f5;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .rank-main {
+      font-weight: 800;
+    }
+
+    .rank-detail {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .history-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .legend-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .legend-dot.good { background: #63c77b; }
+    .legend-dot.mid { background: #f0ae4d; }
+    .legend-dot.bad { background: #e46a7c; }
 
     .table-wrap {
       margin-top: 10px;
       overflow-x: auto;
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 14px;
       background: #fff;
     }
 
@@ -269,8 +432,49 @@
     }
 
     @media (max-width: 840px) {
-      .grid-2, .grid-3, .rank-box { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .rank-box, .analysis-grid { grid-template-columns: 1fr; }
+      .section-head { flex-direction: column; }
       .student-row { grid-template-columns: 1fr; gap: 4px; }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 10px; gap: 12px; }
+      .card { padding: 12px; border-radius: 12px; }
+      .toolbar, .history-tools { display: grid; grid-template-columns: 1fr; }
+      .toolbar button, .history-tools button { width: 100%; }
+      .metric-grid { grid-template-columns: 1fr; }
+      .table-wrap { border: 0; background: transparent; overflow: visible; }
+      table { min-width: 0; }
+      table, thead, tbody, tr, td { display: block; width: 100%; }
+      thead { display: none; }
+      tbody { display: grid; gap: 10px; }
+      tr {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 6px 16px rgba(15, 41, 77, 0.07);
+      }
+      td {
+        display: grid;
+        grid-template-columns: minmax(95px, 0.85fr) minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        white-space: normal;
+        border-bottom: 1px solid var(--border);
+        padding: 10px 12px;
+      }
+      td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      td:last-child { border-bottom: 0; }
+      .empty-history td { display: block; }
+      .empty-history td::before { content: none; }
     }
   </style>
 </head>
@@ -354,8 +558,14 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       </div>
     </section>
 
-    <section class="card">
-      <h2 style="margin-top:0;">Historique des passages</h2>
+    <section class="card history-section">
+      <div class="section-head">
+        <div>
+          <h2>Analyse des passages</h2>
+          <p class="section-kicker">Suivez les meilleurs relais, la precision et les ecarts en un coup d'oeil.</p>
+        </div>
+      </div>
+
       <div class="history-tools">
         <div class="field">
           <label for="historyGroupFilter">Filtre groupe</label>
@@ -365,21 +575,31 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
         <button id="btnClearHistory" class="btn-danger">Effacer uniquement l'historique</button>
       </div>
 
-      <div id="bestGroupCard" class="mini-card" style="margin-top:10px;"></div>
-
-      <div class="rank-box">
-        <div class="mini-card">
-          <strong>Top distance realisee</strong>
-          <ol id="rankDistance"></ol>
-        </div>
-        <div class="mini-card">
-          <strong>Top precision (ecart absolu minimal)</strong>
-          <ol id="rankPrecision"></ol>
+      <div class="analysis-grid">
+        <div id="bestGroupCard" class="analysis-card"></div>
+        <div class="analysis-card">
+          <h3>Classements rapides</h3>
+          <div class="rank-box">
+            <div>
+              <strong>Top distance realisee</strong>
+              <ol id="rankDistance" class="rank-list"></ol>
+            </div>
+            <div>
+              <strong>Top precision</strong>
+              <ol id="rankPrecision" class="rank-list"></ol>
+            </div>
+          </div>
         </div>
       </div>
 
+      <div class="history-legend" aria-label="Legende des ecarts">
+        <span class="legend-pill"><span class="legend-dot good"></span>Ecart <= 1 m</span>
+        <span class="legend-pill"><span class="legend-dot mid"></span>Ecart <= 3 m</span>
+        <span class="legend-pill"><span class="legend-dot bad"></span>Ecart > 3 m</span>
+      </div>
+
       <div class="table-wrap">
-        <table>
+        <table aria-label="Historique detaille des passages">
           <thead>
             <tr>
               <th>Date/heure</th>
@@ -816,6 +1036,7 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
 
       if (!list.length) {
         const tr = document.createElement("tr");
+        tr.className = "empty-history";
         tr.innerHTML = '<td colspan="9" class="muted">Aucun passage enregistre.</td>';
         els.historyBody.appendChild(tr);
       } else {
@@ -823,15 +1044,15 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
           const tr = document.createElement("tr");
           tr.className = qualityClass(p.ecart_absolu);
           tr.innerHTML =
-            "<td>" + formatDate(p.date_heure) + "</td>" +
-            "<td>" + escapeHtml(p.groupe) + "</td>" +
-            "<td>" + escapeHtml(p.coureur_1) + " -> " + escapeHtml(p.coureur_2) + "</td>" +
-            "<td>" + formatNumber(p.distance_arrete_c1) + "</td>" +
-            "<td>" + formatNumber(p.distance_lance_c2) + "</td>" +
-            "<td>" + formatNumber(p.cible) + "</td>" +
-            "<td>" + formatNumber(p.distance_realisee) + "</td>" +
-            "<td>" + signed(p.ecart) + "</td>" +
-            "<td>" + formatNumber(p.ecart_absolu) + "</td>";
+            "<td data-label='Date/heure'>" + formatDate(p.date_heure) + "</td>" +
+            "<td data-label='Groupe'>" + escapeHtml(p.groupe) + "</td>" +
+            "<td data-label='Binome'>" + escapeHtml(p.coureur_1) + " -> " + escapeHtml(p.coureur_2) + "</td>" +
+            "<td data-label='D1 arrete'>" + formatNumber(p.distance_arrete_c1) + " m</td>" +
+            "<td data-label='D2 lance'>" + formatNumber(p.distance_lance_c2) + " m</td>" +
+            "<td data-label='Cible'>" + formatNumber(p.cible) + " m</td>" +
+            "<td data-label='Realise'>" + formatNumber(p.distance_realisee) + " m</td>" +
+            "<td data-label='Ecart'>" + signed(p.ecart) + " m</td>" +
+            "<td data-label='Ecart absolu'>" + formatNumber(p.ecart_absolu) + " m</td>";
           els.historyBody.appendChild(tr);
         });
       }
@@ -848,16 +1069,20 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
         .slice(0, 5);
 
       els.rankDistance.innerHTML = topDistance.length
-        ? topDistance.map((p) =>
-            "<li>G" + escapeHtml(p.groupe) + " - " + escapeHtml(p.coureur_1) + " -> " +
-            escapeHtml(p.coureur_2) + " : " + formatNumber(p.distance_realisee) + " m</li>"
+        ? topDistance.map((p, index) =>
+            "<li><span class='rank-main'>#" + (index + 1) + " - G" + escapeHtml(p.groupe) + " : " +
+            formatNumber(p.distance_realisee) + " m</span><span class='rank-detail'>" +
+            escapeHtml(p.coureur_1) + " -> " + escapeHtml(p.coureur_2) +
+            " | cible " + formatNumber(p.cible) + " m</span></li>"
           ).join("")
         : "<li class='muted'>Aucune donnee.</li>";
 
       els.rankPrecision.innerHTML = topPrecision.length
-        ? topPrecision.map((p) =>
-            "<li>G" + escapeHtml(p.groupe) + " - " + escapeHtml(p.coureur_1) + " -> " +
-            escapeHtml(p.coureur_2) + " : ecart abs " + formatNumber(p.ecart_absolu) + " m</li>"
+        ? topPrecision.map((p, index) =>
+            "<li><span class='rank-main'>#" + (index + 1) + " - G" + escapeHtml(p.groupe) +
+            " : ecart " + formatNumber(p.ecart_absolu) + " m</span><span class='rank-detail'>" +
+            escapeHtml(p.coureur_1) + " -> " + escapeHtml(p.coureur_2) +
+            " | realise " + formatNumber(p.distance_realisee) + " m</span></li>"
           ).join("")
         : "<li class='muted'>Aucune donnee.</li>";
     }
@@ -865,19 +1090,29 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
     function renderBestGroupCard() {
       const g = els.groupSelect.value;
       if (!g) {
-        els.bestGroupCard.innerHTML = "<strong>Meilleur passage du groupe</strong><div class='muted'>Aucun groupe selectionne.</div>";
+        els.bestGroupCard.innerHTML =
+          "<h3>Meilleur passage du groupe</h3><div class='muted'>Aucun groupe selectionne.</div>";
         return;
       }
       const list = passages.filter((p) => p.groupe === g);
       if (!list.length) {
-        els.bestGroupCard.innerHTML = "<strong>Meilleur passage du groupe " + escapeHtml(g) + "</strong><div class='muted'>Aucun passage pour ce groupe.</div>";
+        els.bestGroupCard.innerHTML =
+          "<h3>Meilleur passage du groupe " + escapeHtml(g) + "</h3><div class='muted'>Aucun passage pour ce groupe.</div>";
         return;
       }
       const best = [...list].sort((a, b) => a.ecart_absolu - b.ecart_absolu || b.distance_realisee - a.distance_realisee)[0];
       els.bestGroupCard.innerHTML =
-        "<strong>Meilleur passage du groupe " + escapeHtml(g) + "</strong>" +
-        "<div>" + formatDate(best.date_heure) + " - " + escapeHtml(best.coureur_1) + " -> " + escapeHtml(best.coureur_2) + "</div>" +
-        "<div>Cible: " + formatNumber(best.cible) + " m | Realise: " + formatNumber(best.distance_realisee) + " m | Ecart abs: " + formatNumber(best.ecart_absolu) + " m</div>";
+        "<div class='analysis-highlight'>" +
+          "<div class='analysis-title-line'><h3>Meilleur passage du groupe " + escapeHtml(g) + "</h3>" +
+          "<span class='badge'>Ecart " + formatNumber(best.ecart_absolu) + " m</span></div>" +
+          "<div><strong>" + escapeHtml(best.coureur_1) + " -> " + escapeHtml(best.coureur_2) + "</strong></div>" +
+          "<div class='muted'>" + formatDate(best.date_heure) + "</div>" +
+          "<div class='metric-grid'>" +
+            "<div class='metric'><span class='metric-label'>Cible</span><span class='metric-value'>" + formatNumber(best.cible) + " m</span></div>" +
+            "<div class='metric'><span class='metric-label'>Realise</span><span class='metric-value'>" + formatNumber(best.distance_realisee) + " m</span></div>" +
+            "<div class='metric'><span class='metric-label'>Ecart</span><span class='metric-value'>" + signed(best.ecart) + " m</span></div>" +
+          "</div>" +
+        "</div>";
     }
 
     function exportResultsCSV() {
