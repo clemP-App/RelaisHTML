@@ -712,6 +712,49 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
       </div>
     </section>
 
+    <section class="card sync-card" aria-labelledby="github-sync-title">
+      <div class="sync-head">
+        <div>
+          <h2 id="github-sync-title">Synchronisation GitHub</h2>
+          <p class="sync-help">Optionnel : renseignez un token GitHub pour charger et enregistrer l'historique dans un fichier JSON du depot.</p>
+        </div>
+        <span id="githubSyncStatus" class="sync-status" aria-live="polite">Sync GitHub non configuree</span>
+      </div>
+
+      <form id="githubSyncForm" class="grid-3" style="margin-top:12px;">
+        <div class="field">
+          <label for="githubOwnerInput">Proprietaire</label>
+          <input id="githubOwnerInput" type="text" autocomplete="off" placeholder="Ex: clemP-App">
+        </div>
+        <div class="field">
+          <label for="githubRepoInput">Depot</label>
+          <input id="githubRepoInput" type="text" autocomplete="off" placeholder="Ex: RelaisHTML">
+        </div>
+        <div class="field">
+          <label for="githubBranchInput">Branche</label>
+          <input id="githubBranchInput" type="text" autocomplete="off" value="main">
+        </div>
+        <div class="field">
+          <label for="githubPathInput">Chemin JSON</label>
+          <input id="githubPathInput" type="text" autocomplete="off" value="data/passages.json">
+        </div>
+        <div class="field">
+          <label for="githubTokenInput">Token GitHub</label>
+          <input id="githubTokenInput" type="password" autocomplete="off" placeholder="Token personnel GitHub">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn-primary">Enregistrer la sync</button>
+        </div>
+      </form>
+
+      <div class="sync-actions" style="margin-top:12px;">
+        <button id="btnPullGithub" type="button" class="btn-secondary">Charger depuis GitHub</button>
+        <button id="btnPushGithub" type="button" class="btn-success">Enregistrer vers GitHub</button>
+        <button id="btnDisableGithubSync" type="button" class="btn-danger">Desactiver la sync</button>
+      </div>
+    </section>
+
     <section class="card history-section">
       <div class="section-head">
         <div>
@@ -901,18 +944,6 @@ groupe,eleve,distance_arrete_6s,distance_lance_6s
 
     function savePassages() {
       localStorage.setItem(STORAGE_PASSAGES_KEY, JSON.stringify(passages));
-    }
-
-    function createPassageId(p) {
-      const seed = [
-        p.date_heure || new Date().toISOString(), p.groupe || "", p.coureur_1 || "", p.coureur_2 || "",
-        p.distance_realisee || "", Math.random().toString(36).slice(2)
-      ].join("|");
-      let hash = 0;
-      for (let i = 0; i < seed.length; i += 1) {
-        hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-      }
-      return "passage_" + Date.now().toString(36) + "_" + Math.abs(hash).toString(36);
     }
 
     function renderGroups() {
