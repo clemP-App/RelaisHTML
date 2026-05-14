@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="EPS Relais 12 s — bilan enseignant par groupe." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="EPS Relais" />
+    <title>EPS Relais — Bilan enseignant</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="bilan">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <p class="site-title">EPS <span>Relais 12 s</span></p>
+        <div class="site-header__end">
+          <nav class="nav-links" aria-label="Navigation principale">
+            <a href="index.html">Classes</a>
+            <a href="performance.html">Performance</a>
+            <a href="bilan.html" class="is-active">Bilan</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <h1>Bilan enseignant</h1>
+
+      <div id="alert-root"></div>
+
+      <section class="card">
+        <h2 class="mt-0" data-icon="navBilan">Classe</h2>
+        <label for="class-select">Sélection</label>
+        <select id="class-select"></select>
+      </section>
+
+      <section class="card export-card" aria-label="Exports">
+        <h2 class="mt-0" data-icon="csv">Exporter</h2>
+        <div id="export-toolbar-host" class="export-toolbar-host export-toolbar-host--card"></div>
+      </section>
+
+      <section class="card" id="global-chart-section" style="display: none">
+        <h2 class="mt-0" data-icon="chart">Vue globale des groupes</h2>
+        <div class="chart-bilan-global-wrap">
+          <canvas id="chart-global" aria-label="Graphique global"></canvas>
+        </div>
+      </section>
+
+      <section class="card" id="bilan-group-section" style="display: none">
+        <h2 class="mt-0" data-icon="table">Groupe</h2>
+        <label for="bilan-group-select">Afficher le détail du groupe</label>
+        <select id="bilan-group-select"></select>
+        <div id="bilan-binome-wrap" class="bilan-binome-wrap" style="display: none">
+          <div class="relay-field-label" id="bilan-binome-label">Filtrer par binôme</div>
+          <input type="hidden" id="bilan-binome-filter" value="" />
+          <div
+            id="bilan-binome-list"
+            class="relay-pick-list bilan-binome-pick"
+            role="listbox"
+            aria-labelledby="bilan-binome-label"
+          ></div>
+        </div>
+      </section>
+
+      <div id="groups-bilan-root"></div>
+    </main>
+
+    <div id="modal-root" hidden></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/page-bilan.js"></script>
+    <script src="js/pwa-register.js"></script>
+  </body>
+</html>

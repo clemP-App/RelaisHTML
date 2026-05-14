@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="EPS Relais 12 s — classes, performances et bilan enseignant." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="EPS Relais" />
+    <title>EPS Relais — Classes &amp; groupes</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="index">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <p class="site-title">EPS <span>Relais 12 s</span></p>
+        <div class="site-header__end">
+          <nav class="nav-links" aria-label="Navigation principale">
+            <a href="index.html" class="is-active">Classes</a>
+            <a href="performance.html">Performance</a>
+            <a href="bilan.html">Bilan</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <h1>Classes, élèves et groupes</h1>
+
+      <div id="alert-root"></div>
+
+      <section class="card hero-actions" aria-label="Actions rapides">
+        <a class="btn btn--primary btn--block btn--lg" href="performance.html" id="link-perf" data-btn-icon="navPerf">Enregistrer une performance</a>
+        <a class="btn btn--secondary btn--block btn--lg" href="bilan.html" data-btn-icon="navBilan">Bilan enseignant</a>
+      </section>
+
+      <section class="card">
+        <h2 data-icon="navClass">Classe active</h2>
+        <div class="form-row form-row--2">
+          <div>
+            <label for="class-select">Sélectionner une classe</label>
+            <select id="class-select"></select>
+          </div>
+          <div>
+            <label for="class-name">Nom de la classe</label>
+            <input type="text" id="class-name" placeholder="Ex. 5e A" autocomplete="organization" />
+          </div>
+        </div>
+        <div class="class-actions-row">
+          <button type="button" class="btn btn--primary" id="btn-save-class" data-btn-icon="save">
+            Enregistrer les modifications
+          </button>
+          <button type="button" class="btn btn--danger btn--danger-class" id="btn-delete-class" data-btn-icon="trash">
+            Supprimer cette classe
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 data-icon="import">Importer une classe (copier-coller)</h2>
+        <details class="card card--muted" style="margin-bottom: 1rem">
+          <summary style="cursor: pointer; font-weight: 700">Voir le format attendu</summary>
+          <pre style="white-space: pre-wrap; font-size: 0.8rem; margin: 0.75rem 0 0; overflow-x: auto">
+# Chaque ligne : Nom;Prénom;numéro de groupe;perf départ arrêté;perf avec élan
+
+Classe: 5eA
+
+Dupont;Lucas;1;32;38
+Martin;Emma;1;30;36
+Bernard;Noah;1;31;37
+
+Petit;Lina;2;29;35
+Robert;Hugo;2;33;39
+Durand;Chloé;2;28;34</pre>
+        </details>
+        <label for="import-text">Texte à importer</label>
+        <textarea id="import-text" placeholder="Collez ici le bloc « Classe: … »"></textarea>
+        <div class="btn-group" style="margin-top: 1rem">
+          <button type="button" class="btn btn--success" id="btn-import">Importer comme nouvelle classe</button>
+        </div>
+      </section>
+
+      <section class="card" id="section-groups">
+        <h2 data-icon="table">Élèves par groupe</h2>
+        <div id="groups-container" class="table-wrap students-table-wrap"></div>
+      </section>
+
+      <section class="card">
+        <h2 data-icon="navClass">Ajouter un élève</h2>
+        <div class="form-row form-row--2">
+          <div>
+            <label for="add-group">Groupe cible</label>
+            <select id="add-group"></select>
+          </div>
+        </div>
+        <div class="form-row form-row--2">
+          <div>
+            <label for="add-nom">Nom</label>
+            <input type="text" id="add-nom" autocomplete="family-name" />
+          </div>
+          <div>
+            <label for="add-prenom">Prénom</label>
+            <input type="text" id="add-prenom" autocomplete="given-name" />
+          </div>
+        </div>
+        <div class="form-row form-row--2">
+          <div>
+            <label for="add-arrete">6 s départ arrêté</label>
+            <input type="number" id="add-arrete" step="0.1" min="0" />
+          </div>
+          <div>
+            <label for="add-lance">6 s départ lancé</label>
+            <input type="number" id="add-lance" step="0.1" min="0" />
+          </div>
+        </div>
+        <button type="button" class="btn btn--primary" id="btn-add-student">Ajouter l’élève</button>
+      </section>
+    </main>
+
+    <div id="modal-root" hidden></div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="js/page-index.js"></script>
+    <script src="js/pwa-register.js"></script>
+  </body>
+</html>
