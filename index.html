@@ -31,7 +31,8 @@
     <main class="app-shell">
       <h1>Classes, élèves et groupes</h1>
 
-      <div id="alert-root"></div>
+      <div id="alert-root" aria-live="polite"></div>
+      <div id="storage-blocked-banner" class="alert alert--error" hidden style="margin-bottom: 1rem"></div>
 
       <section class="card hero-actions" aria-label="Actions rapides">
         <a class="btn btn--primary btn--block btn--lg" href="performance.html" id="link-perf" data-btn-icon="navPerf">Enregistrer une performance</a>
@@ -65,8 +66,6 @@
         <details class="card card--muted" style="margin-bottom: 1rem">
           <summary style="cursor: pointer; font-weight: 700">Voir le format attendu</summary>
           <pre style="white-space: pre-wrap; font-size: 0.8rem; margin: 0.75rem 0 0; overflow-x: auto">
-# Chaque ligne : Nom;Prénom;numéro de groupe;perf départ arrêté;perf avec élan
-
 Classe: 5eA
 
 Dupont;Lucas;1;32;38
@@ -76,6 +75,9 @@ Bernard;Noah;1;31;37
 Petit;Lina;2;29;35
 Robert;Hugo;2;33;39
 Durand;Chloé;2;28;34</pre>
+          <p class="field-hint" style="margin-top: 0.75rem; font-size: 0.85rem">
+            Ce bloc est prêt à coller tel quel. Si votre texte contient des lignes d’aide commençant par <strong>#</strong>, elles sont ignorées à l’import. Utilisez des <strong>;</strong> (pas de point-virgule « large » de certains claviers).
+          </p>
         </details>
         <label for="import-text">Texte à importer</label>
         <textarea id="import-text" placeholder="Collez ici le bloc « Classe: … »"></textarea>

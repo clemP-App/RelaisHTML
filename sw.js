@@ -1,5 +1,5 @@
 /* EPS Relais — cache des ressources locales pour mode hors-ligne (PWA). */
-var CACHE_NAME = "eps-relais-v1";
+var CACHE_NAME = "eps-relais-v2";
 
 var PRECACHE_URLS = [
   "./index.html",
